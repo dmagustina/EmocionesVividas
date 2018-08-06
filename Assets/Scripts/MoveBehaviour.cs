@@ -5,7 +5,11 @@ using UnityEngine;
 public class MoveBehaviour : MonoBehaviour {
 
     public Vector3 jump;
-    public float jumpForce = 2.0f;
+
+    public Vector3 left { get; private set; }
+    public Vector3 right { get; private set; }
+
+public float jumpForce = 2.0f;
 
     public bool isGrounded;
     Rigidbody2D rb;
@@ -13,6 +17,9 @@ public class MoveBehaviour : MonoBehaviour {
     {
         rb = GetComponent<Rigidbody2D>();
         jump = new Vector3(0.0f, 2.0f, 0.0f);
+        left = new Vector3(-2.0f, 0.0f, 0.0f);
+        right = new Vector3(2.0f, 0.0f, 0.0f);
+
     }
 
     void OnCollisionStay2D()
@@ -30,15 +37,11 @@ public class MoveBehaviour : MonoBehaviour {
         }
         if (Input.GetKey(KeyCode.LeftArrow))
         {
-            Vector3 position = this.transform.position;
-            position.x--;
-            this.transform.position = position;
+            rb.AddForce(left, ForceMode2D.Impulse);
         }
         if (Input.GetKey(KeyCode.RightArrow))
         {
-            Vector3 position = this.transform.position;
-            position.x++;
-            this.transform.position = position;
+            rb.AddForce(right, ForceMode2D.Impulse);
         }
     }
 }
