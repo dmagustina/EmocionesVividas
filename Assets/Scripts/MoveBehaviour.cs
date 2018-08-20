@@ -4,44 +4,58 @@ using UnityEngine;
 
 public class MoveBehaviour : MonoBehaviour {
 
-    public Vector3 jump;
+	public LayerMask groundL;
+	public Transform transform;
 
-    public Vector3 left { get; private set; }
-    public Vector3 right { get; private set; }
+	private float jumpForce = 9f;
+	private float maximumSpeed = 12f;
+	private float sprintMultiplier = 2f;
+	private float baseSpeed = 2.0f;
+	private Rigidbody2D rb;
 
-public float jumpForce = 2.0f;
+	void Start() {
+		transform = GetComponent<Transform>();
+		rb = GetComponent<Rigidbody2D>();
+	}
 
-    public bool isGrounded;
-    Rigidbody2D rb;
-    void Start()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        jump = new Vector3(0.0f, 2.0f, 0.0f);
-        left = new Vector3(-2.0f, 0.0f, 0.0f);
-        right = new Vector3(2.0f, 0.0f, 0.0f);
 
-    }
+	void Update() {
+		UpdateMovement();
+	}
 
-    void OnCollisionStay2D()
-    {
-        isGrounded = true;
-    }
+	void FixedUpdate() {
+		if (Mathf.Abs(rb.velocity.x) > maximumSpeed)
+			rb.velocity = new Vector2 (maximumSpeed * Mathf.Sign(rb.velocity.x),rb.velocity.y);
+		
+		rb.gravityScale = (rb.velocity.y < 0) ? 5 : 2;
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
-        {
+	}
 
-            rb.AddForce(jump * jumpForce, ForceMode2D.Impulse);
-            isGrounded = false;
-        }
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            rb.AddForce(left, ForceMode2D.Impulse);
-        }
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-            rb.AddForce(right, ForceMode2D.Impulse);
-        }
-    }
+	void UpdateMovement() {
+
+		if (Input.GetKeyDown(KeyCode.Space) && isGrounded()) {
+			rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+		}
+
+		if (Input.GetKey(KeyCode.LeftArrow)) 
+			rb.AddForce(Vector2.left * baseSpeed, ForceMode2D.Impulse);
+		
+
+		if (Input.GetKey(KeyCode.RightArrow)) 
+			rb.AddForce(Vector2.right * baseSpeed, ForceMode2D.Impulse);
+		
+
+		if (Input.GetKeyUp (KeyCode.RightArrow) || Input.GetKeyUp (KeyCode.LeftArrow))
+			rb.velocity = new Vector2 (0, rb.velocity.y);
+
+		if(Input.GetKeyDown(KeyCode.LeftShift)) maximumSpeed *= sprintMultiplier;
+		if(Input.GetKeyUp(KeyCode.LeftShift))   maximumSpeed /= sprintMultiplier;
+
+	}
+
+	bool isGrounded() {
+		RaycastHit2D ray = Physics2D.Raycast(transform.position, Vector2.down, 3.0f, groundL);
+		return ray.collider != null;
+	}
+
 }
